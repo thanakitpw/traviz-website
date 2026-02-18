@@ -897,12 +897,37 @@
  </footer>
 
  <script>
- // Tab switching
- function showTab(tabName) {
- document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('detail-tab--active'));
- event.target.classList.add('detail-tab--active');
- }
- </script>
+        // Tab switching
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.detail-section').forEach(section => {
+                if (section.id.startsWith('tab-')) {
+                    section.style.display = 'none';
+                }
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('detail-tab--active'));
+            
+            // Show selected tab content
+            const targetTab = document.getElementById('tab-' + tabName);
+            if (targetTab) {
+                targetTab.style.display = 'block';
+            }
+            
+            // Add active class to clicked tab
+            event.target.classList.add('detail-tab--active');
+        }
+        
+        // Initialize: show only overview tab
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.detail-section').forEach(section => {
+                if (section.id.startsWith('tab-') && section.id !== 'tab-overview') {
+                    section.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
