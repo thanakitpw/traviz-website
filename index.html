@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Traviz — Activity-first Travel Platform</title>
+  <meta name="description" content="ค้นพบประสบการณ์ท่องเที่ยวที่ไม่เหมือนใคร จองทัวร์ กิจกรรม โรงแรม และรถเช่า พร้อม AI Trip Planner ช่วยวางแผนให้คุณ">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* Page-specific overrides */
+    .hero__stats {
+      display: flex;
+      gap: var(--space-8);
+      margin-top: var(--space-8);
+    }
+    .hero__stat {
+      text-align: center;
+    }
+    .hero__stat-number {
+      font-family: var(--font-heading);
+      font-size: var(--text-2xl);
+      font-weight: 800;
+    }
+    .hero__stat-label {
+      font-size: var(--text-xs);
+      opacity: 0.7;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .trust-logos {
+      display: flex;
+      align-items: center;
+      gap: var(--space-8);
+      justify-content: center;
+      padding: var(--space-6) 0;
+      opacity: 0.4;
+      font-family: var(--font-heading);
+      font-size: var(--text-lg);
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .deals-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-6);
+    }
+    .deal-card {
+      position: relative;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      height: 280px;
+      cursor: pointer;
+    }
+    .deal-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform var(--transition-slow);
+    }
+    .deal-card:hover img {
+      transform: scale(1.08);
+    }
+    .deal-card__overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.7) 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: var(--space-6);
+      color: white;
+    }
+    .deal-card__discount {
+      position: absolute;
+      top: var(--space-4);
+      right: var(--space-4);
+      padding: var(--space-2) var(--space-3);
+      background: var(--color-error);
+      color: white;
+      font-family: var(--font-heading);
+      font-size: var(--text-sm);
+      font-weight: 800;
+      border-radius: var(--radius-md);
+    }
+    .deal-card__title {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: var(--text-xl);
+      margin-bottom: var(--space-1);
+      color: white;
+    }
+    .deal-card__price {
+      font-size: var(--text-sm);
+      opacity: 0.85;
+    }
+    .testimonial-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-6);
+    }
+    .testimonial-card {
+      background: var(--color-surface);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      box-shadow: var(--shadow-card);
+      transition: all var(--transition-base);
+    }
+    .testimonial-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+    .testimonial__stars {
+      color: var(--color-secondary);
+      font-size: var(--text-lg);
+      margin-bottom: var(--space-4);
+    }
+    .testimonial__text {
+      font-size: var(--text-base);
+      line-height: 1.7;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-6);
+      font-style: italic;
+    }
+    .testimonial__author {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .testimonial__avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-full);
+      background: var(--color-primary-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .testimonial__name {
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: var(--text-sm);
+    }
+    .testimonial__info {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+    }
+    @media (max-width: 768px) {
+      .deals-grid { grid-template-columns: 1fr; }
+      .testimonial-grid { grid-template-columns: 1fr; }
+      .hero__stats { flex-direction: column; gap: var(--space-4); }
+    }
+    @media (max-width: 1024px) {
+      .deals-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============ NAVBAR ============ -->
+  <nav class="navbar navbar--transparent" id="navbar">
+    <div class="container navbar__inner">
+      <a href="index.html" class="navbar__logo" style="color: white;">
+        Trav<span class="logo-dot">iz</span>
+      </a>
+      <div class="navbar__links" style="color: white;">
+        <a href="#" class="navbar__link">กิจกรรม</a>
+        <a href="#" class="navbar__link">ที่พัก</a>
+        <a href="#" class="navbar__link">รถเช่า</a>
+        <a href="#" class="navbar__link">ตั๋ว</a>
+        <a href="ai-planner.html" class="navbar__link">AI Planner</a>
+      </div>
+      <div class="navbar__actions">
+        <button class="btn btn-glass" style="font-size: var(--text-sm);">TH</button>
+        <a href="#" class="btn btn-glass" style="font-size: var(--text-sm);">เข้าสู่ระบบ</a>
+        <a href="#" class="btn btn-secondary" style="font-size: var(--text-sm);">สมัคร Partner</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="hero">
+    <div class="hero__bg">
+      <img src="https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=1920&q=80" alt="Thai island paradise" loading="eager">
+      <div class="hero__overlay"></div>
+    </div>
+    <div class="container hero__content animate-fadeInUp">
+      <div class="hero__tagline">
+        Activity-first Platform — ออกแบบเพื่อนักเดินทางตัวจริง
+      </div>
+      <h1 class="hero__title">
+        ค้นพบ<span class="highlight">ประสบการณ์</span><br>
+        ที่ไม่เหมือนใคร
+      </h1>
+      <p class="hero__subtitle">
+        จองทัวร์ท้องถิ่น กิจกรรม ที่พัก และรถเช่าจากไกด์และผู้ให้บริการที่ผ่านการคัดสรร
+        ให้ AI ช่วยวางแผนทริปให้คุณ
+      </p>
+
+      <!-- Search Box -->
+      <div class="search-box animate-fadeInUp delay-200">
+        <div class="search-box__field">
+          <label class="search-box__label">จุดหมาย</label>
+          <input type="text" class="search-box__input" placeholder="เชียงใหม่, ภูเก็ต, กระบี่..." id="search-dest">
+        </div>
+        <div class="search-box__divider"></div>
+        <div class="search-box__field">
+          <label class="search-box__label">วันที่</label>
+          <input type="text" class="search-box__input" placeholder="เลือกวันเดินทาง" id="search-date">
+        </div>
+        <div class="search-box__divider"></div>
+        <div class="search-box__field">
+          <label class="search-box__label">จำนวน</label>
+          <input type="text" class="search-box__input" placeholder="2 ผู้ใหญ่" id="search-guests">
+        </div>
+        <button class="search-box__btn" aria-label="Search">
+          ค้นหา
+        </button>
+      </div>
+
+      <div class="hero__stats animate-fadeInUp delay-300">
+        <div class="hero__stat">
+          <div class="hero__stat-number">2,500+</div>
+          <div class="hero__stat-label">กิจกรรม</div>
+        </div>
+        <div class="hero__stat">
+          <div class="hero__stat-number">850+</div>
+          <div class="hero__stat-label">ไกด์ท้องถิ่น</div>
+        </div>
+        <div class="hero__stat">
+          <div class="hero__stat-number">50K+</div>
+          <div class="hero__stat-label">รีวิว</div>
+        </div>
+        <div class="hero__stat">
+          <div class="hero__stat-number">4.9 ★</div>
+          <div class="hero__stat-label">คะแนนเฉลี่ย</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CATEGORIES ============ -->
+  <section class="section-sm">
+    <div class="container">
+      <div class="categories" style="justify-content: center;">
+        <div class="category-pill">
+          <div class="category-pill__icon"></div>
+          <div class="category-pill__name">ทัวร์/กิจกรรม</div>
+        </div>
+        <div class="category-pill">
+          <div class="category-pill__icon"></div>
+          <div class="category-pill__name">ที่พัก</div>
+        </div>
+        <div class="category-pill">
+          <div class="category-pill__icon"></div>
+          <div class="category-pill__name">รถเช่า</div>
+        </div>
+        <div class="category-pill">
+          <div class="category-pill__icon"></div>
+          <div class="category-pill__name">ตั๋วเข้าชม</div>
+        </div>
+        <div class="category-pill">
+          <div class="category-pill__icon"></div>
+          <div class="category-pill__name">แพ็คเกจ</div>
+        </div>
+        <div class="category-pill">
+          <div class="category-pill__icon"></div>
+          <div class="category-pill__name">Cooking Class</div>
+        </div>
+        <div class="category-pill">
+          <div class="category-pill__icon"></div>
+          <div class="category-pill__name">ดำน้ำ</div>
+        </div>
+        <div class="category-pill">
+          <div class="category-pill__icon"></div>
+          <div class="category-pill__name">Wellness</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TRENDING ACTIVITIES ============ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-header__label">Trending Now</div>
+        <h2 class="section-header__title">กิจกรรมยอดนิยม</h2>
+        <p class="section-header__subtitle">ประสบการณ์ที่นักท่องเที่ยวทั่วโลกชื่นชอบ คัดมาแล้วโดยทีม Traviz</p>
+      </div>
+
+      <div class="tour-grid">
+        <!-- Card 1 -->
+        <div class="card tour-card">
+          <div class="tour-card__image">
+            <img src="https://images.unsplash.com/photo-1528181304800-259b08848526?w=600&q=80" alt="Doi Suthep Temple Tour">
+            <span class="tour-card__badge">Best Seller</span>
+            <button class="tour-card__wishlist" aria-label="Add to wishlist">♡</button>
+          </div>
+          <div class="tour-card__body">
+            <div class="tour-card__location">เชียงใหม่ • วัฒนธรรม</div>
+            <h3 class="tour-card__title">ทัวร์วัดดอยสุเทพ & วัดเก่าแก่ พร้อมไกด์ท้องถิ่น</h3>
+            <div class="tour-card__meta">
+              <span>4 ชม.</span>
+              <span class="tour-card__rating">4.9 <span style="color: var(--color-text-muted); font-weight: 400;">(328)</span></span>
+            </div>
+            <div class="tour-card__footer">
+              <div>
+                <div class="tour-card__price-old">฿1,500</div>
+                <div class="tour-card__price">฿990 <span>/คน</span></div>
+              </div>
+              <div class="tour-card__availability">เหลือ 3 ที่!</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="card tour-card">
+          <div class="tour-card__image">
+            <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80" alt="Thai Cooking Class">
+            <span class="tour-card__badge">Local Gem</span>
+            <button class="tour-card__wishlist" aria-label="Add to wishlist">♡</button>
+          </div>
+          <div class="tour-card__body">
+            <div class="tour-card__location">เชียงใหม่ • อาหาร</div>
+            <h3 class="tour-card__title">เรียนทำอาหารไทย Farm to Table กับเชฟท้องถิ่น</h3>
+            <div class="tour-card__meta">
+              <span>5 ชม.</span>
+              <span class="tour-card__rating">4.8 <span style="color: var(--color-text-muted); font-weight: 400;">(215)</span></span>
+            </div>
+            <div class="tour-card__footer">
+              <div>
+                <div class="tour-card__price-old">฿2,200</div>
+                <div class="tour-card__price">฿1,690 <span>/คน</span></div>
+              </div>
+              <div class="tour-card__availability">ยอดนิยม!</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="card tour-card">
+          <div class="tour-card__image">
+            <img src="https://images.unsplash.com/photo-1537956965359-7573183d1f57?w=600&q=80" alt="Kayaking Phang Nga Bay">
+            <span class="tour-card__badge" style="background: var(--gradient-primary);">Adventure</span>
+            <button class="tour-card__wishlist" aria-label="Add to wishlist">♡</button>
+          </div>
+          <div class="tour-card__body">
+            <div class="tour-card__location">พังงา • ผจญภัย</div>
+            <h3 class="tour-card__title">พายเรือคายัค อ่าวพังงา ชมถ้ำลอด & เกาะเจมส์บอนด์</h3>
+            <div class="tour-card__meta">
+              <span>8 ชม.</span>
+              <span class="tour-card__rating">4.9 <span style="color: var(--color-text-muted); font-weight: 400;">(189)</span></span>
+            </div>
+            <div class="tour-card__footer">
+              <div>
+                <div class="tour-card__price-old">฿3,500</div>
+                <div class="tour-card__price">฿2,490 <span>/คน</span></div>
+              </div>
+              <div class="tour-card__availability">เหลือ 5 ที่!</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="card tour-card">
+          <div class="tour-card__image">
+            <img src="https://images.unsplash.com/photo-1551524559-8af4e6624178?w=600&q=80" alt="Elephant Sanctuary">
+            <span class="tour-card__badge">Ethical</span>
+            <button class="tour-card__wishlist" aria-label="Add to wishlist">♡</button>
+          </div>
+          <div class="tour-card__body">
+            <div class="tour-card__location">เชียงใหม่ • ธรรมชาติ</div>
+            <h3 class="tour-card__title">เยี่ยมชมศูนย์ดูแลช้าง Ethical Sanctuary ครึ่งวัน</h3>
+            <div class="tour-card__meta">
+              <span>6 ชม.</span>
+              <span class="tour-card__rating">5.0 <span style="color: var(--color-text-muted); font-weight: 400;">(412)</span></span>
+            </div>
+            <div class="tour-card__footer">
+              <div>
+                <div class="tour-card__price-old">฿2,800</div>
+                <div class="tour-card__price">฿1,990 <span>/คน</span></div>
+              </div>
+              <div class="tour-card__availability">เหลือ 2 ที่!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: var(--space-10);">
+        <a href="#" class="btn btn-outline btn-lg">ดูกิจกรรมทั้งหมด →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ AI TRIP PLANNER BANNER ============ -->
+  <section class="section-sm">
+    <div class="container">
+      <div class="ai-banner">
+        <div class="ai-banner__content">
+          <div class="ai-banner__icon">AI</div>
+          <h2 class="ai-banner__title">AI Trip Planner</h2>
+          <p class="ai-banner__desc">
+            บอกแค่ว่าคุณอยากไปไหน กี่วัน งบเท่าไหร่ — AI จะสร้างแพลนทริปที่สมบูรณ์แบบให้คุณทันที พร้อมจองได้เลยในคลิกเดียว
+          </p>
+          <a href="ai-planner.html" class="btn btn-secondary btn-lg">
+            เริ่มวางแผนทริปกับ AI
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LAST MINUTE DEALS ============ -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-header__label">โปรไฟไหม้</div>
+        <h2 class="section-header__title">Last Minute Deals</h2>
+        <p class="section-header__subtitle">ดีลสุดพิเศษ จำนวนจำกัด จองด่วน!</p>
+      </div>
+
+      <div class="deals-grid">
+        <div class="deal-card">
+          <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=600&q=80" alt="Luxury Resort Deal">
+          <div class="deal-card__overlay">
+            <span class="deal-card__discount">-40%</span>
+            <h3 class="deal-card__title">Pool Villa ภูเก็ต 3 วัน 2 คืน</h3>
+            <p class="deal-card__price">เริ่มต้น ฿3,990/คืน (จาก ฿6,650)</p>
+          </div>
+        </div>
+        <div class="deal-card">
+          <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=600&q=80" alt="Island Hopping Deal">
+          <div class="deal-card__overlay">
+            <span class="deal-card__discount">-30%</span>
+            <h3 class="deal-card__title">Island Hopping กระบี่ 4 เกาะ</h3>
+            <p class="deal-card__price">เริ่มต้น ฿890/คน (จาก ฿1,290)</p>
+          </div>
+        </div>
+        <div class="deal-card">
+          <img src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=600&q=80" alt="Night Safari">
+          <div class="deal-card__overlay">
+            <span class="deal-card__discount">-25%</span>
+            <h3 class="deal-card__title">Night Safari เชียงใหม่ + รถรับ-ส่ง</h3>
+            <p class="deal-card__price">เริ่มต้น ฿590/คน (จาก ฿790)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TESTIMONIALS ============ -->
+  <section class="section" style="background: var(--color-bg-alt);">
+    <div class="container">
+      <div class="section-header section-header--centered">
+        <div class="section-header__label">เสียงจากนักเดินทาง</div>
+        <h2 class="section-header__title">ทำไมต้อง Traviz?</h2>
+      </div>
+      <div class="testimonial-grid">
+        <div class="testimonial-card">
+          <div class="testimonial__stars">★★★★★</div>
+          <p class="testimonial__text">"ไกด์ท้องถิ่นพาไปสถานที่ที่ไม่มีในแผนที่ ประสบการณ์ที่หาไม่ได้จาก Google เลย สุดยอดมาก!"</p>
+          <div class="testimonial__author">
+            <div class="testimonial__avatar"></div>
+            <div>
+              <div class="testimonial__name">คุณสมชาย</div>
+              <div class="testimonial__info">กรุงเทพ • ทัวร์เชียงใหม่</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial__stars">★★★★★</div>
+          <p class="testimonial__text">"AI Planner วางแผนให้ได้ดีมาก ครบทั้งที่เที่ยว ที่กิน ที่พัก แค่บอกงบก็จัดมาทั้งทริปเลย"</p>
+          <div class="testimonial__author">
+            <div class="testimonial__avatar"></div>
+            <div>
+              <div class="testimonial__name">Sarah M.</div>
+              <div class="testimonial__info">Australia • Trip to Phuket</div>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card">
+          <div class="testimonial__stars">★★★★★</div>
+          <p class="testimonial__text">"จองง่ายมาก ปลอดภัย ได้ไกด์ที่เป็นคนท้องถิ่นจริงๆ พาทำกิจกรรมสนุกมาก ลูกๆ ชอบมาก"</p>
+          <div class="testimonial__author">
+            <div class="testimonial__avatar"></div>
+            <div>
+              <div class="testimonial__name">ครอบครัววิชัย</div>
+              <div class="testimonial__info">ขอนแก่น • ทัวร์ครอบครัว</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STATS BANNER ============ -->
+  <section class="section-sm">
+    <div class="container">
+      <div class="stats-banner">
+        <div class="stat">
+          <div class="stat__number">2,500+</div>
+          <div class="stat__label">กิจกรรม & ทัวร์</div>
+        </div>
+        <div class="stat">
+          <div class="stat__number">850+</div>
+          <div class="stat__label">ไกด์ & พาร์ทเนอร์</div>
+        </div>
+        <div class="stat">
+          <div class="stat__number">50K+</div>
+          <div class="stat__label">ผู้ใช้งาน</div>
+        </div>
+        <div class="stat">
+          <div class="stat__number">4.9 ★</div>
+          <div class="stat__label">คะแนนเฉลี่ย</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ NEWSLETTER ============ -->
+  <section class="section" style="background: var(--color-primary-50);">
+    <div class="container" style="text-align: center; max-width: 640px;">
+      <h2 style="font-size: var(--text-3xl); font-weight: 800; margin-bottom: var(--space-4);">รับดีลพิเศษก่อนใคร</h2>
+      <p style="color: var(--color-text-secondary); margin-bottom: var(--space-8);">สมัครรับจดหมายข่าว รับโปรโมชัน ส่วนลดพิเศษ และแรงบันดาลใจในการเดินทาง</p>
+      <div style="display: flex; gap: var(--space-2); max-width: 480px; margin: 0 auto;">
+        <input type="email" placeholder="กรอกอีเมลของคุณ..." style="flex: 1; padding: var(--space-4) var(--space-5); border: 2px solid var(--color-border); border-radius: var(--radius-xl); background: white; font-size: var(--text-base);">
+        <button class="btn btn-primary btn-lg">สมัครเลย</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__grid">
+        <div>
+          <div class="navbar__logo" style="color: white; margin-bottom: var(--space-2);">
+            Trav<span class="logo-dot">iz</span>
+          </div>
+          <p class="footer__brand-desc">
+            Activity-first Travel Platform — ค้นพบประสบการณ์ท่องเที่ยวที่ไม่เหมือนใครจากไกด์ท้องถิ่นและพาร์ทเนอร์ที่เราคัดสรรแล้ว
+          </p>
+        </div>
+        <div>
+          <h4 class="footer__heading">สำรวจ</h4>
+          <a href="#" class="footer__link">กิจกรรมทั้งหมด</a>
+          <a href="#" class="footer__link">จุดหมายยอดนิยม</a>
+          <a href="#" class="footer__link">AI Trip Planner</a>
+          <a href="#" class="footer__link">Last Minute Deals</a>
+          <a href="#" class="footer__link">บล็อกท่องเที่ยว</a>
+        </div>
+        <div>
+          <h4 class="footer__heading">เกี่ยวกับเรา</h4>
+          <a href="#" class="footer__link">เกี่ยวกับ Traviz</a>
+          <a href="#" class="footer__link">ร่วมงานกับเรา</a>
+          <a href="#" class="footer__link">ข้อตกลงการใช้งาน</a>
+          <a href="#" class="footer__link">นโยบายความเป็นส่วนตัว</a>
+          <a href="#" class="footer__link">ติดต่อเรา</a>
+        </div>
+        <div>
+          <h4 class="footer__heading">Partner</h4>
+          <a href="#" class="footer__link">สมัครเป็น Partner</a>
+          <a href="#" class="footer__link">Partner Dashboard</a>
+          <a href="#" class="footer__link">API Documentation</a>
+          <a href="#" class="footer__link">คู่มือการใช้งาน</a>
+        </div>
+      </div>
+      <div class="footer__bottom">
+        <p>© 2026 Traviz. All rights reserved.</p>
+        <div style="display: flex; gap: var(--space-4);">
+          <a href="#" style="opacity: 0.6; font-size: 14px;">Facebook</a>
+          <a href="#" style="opacity: 0.6; font-size: 14px;">Instagram</a>
+          <a href="#" style="opacity: 0.6; font-size: 14px;">Twitter</a>
+          <a href="#" style="opacity: 0.6; font-size: 14px;">YouTube</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ============ SCRIPTS ============ -->
+  <script>
+    // Navbar scroll effect
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 80) {
+        navbar.classList.remove('navbar--transparent');
+        navbar.classList.add('navbar--solid');
+        navbar.querySelectorAll('.navbar__logo, .navbar__link').forEach(el => {
+          el.style.color = 'var(--color-text)';
+        });
+      } else {
+        navbar.classList.remove('navbar--solid');
+        navbar.classList.add('navbar--transparent');
+        navbar.querySelectorAll('.navbar__logo, .navbar__link').forEach(el => {
+          el.style.color = 'white';
+        });
+      }
+    });
+
+    // Scroll reveal animation
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.card, .deal-card, .testimonial-card, .category-pill').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = 'all 0.6s ease';
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>

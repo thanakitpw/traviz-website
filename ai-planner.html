@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Trip Planner — Traviz</title>
+    <meta name="description" content="ให้ AI วางแผนทริปสมบูรณ์แบบให้คุณ เลือกจุดหมาย บอกงบ แล้วจองได้เลยในคลิกเดียว">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .planner-hero {
+            min-height: 100vh;
+            background: var(--gradient-hero);
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .planner-hero::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            right: -200px;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(13, 148, 136, 0.2) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .planner-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -150px;
+            left: -100px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(249, 115, 22, 0.15) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite reverse;
+        }
+
+        .planner-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-12);
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .planner-left {
+            color: var(--color-white);
+        }
+
+        .planner-left .hero__tagline {
+            margin-bottom: var(--space-6);
+        }
+
+        .planner-left h1 {
+            font-size: var(--text-5xl);
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: -2px;
+            margin-bottom: var(--space-6);
+            color: white;
+        }
+
+        .planner-left h1 .highlight {
+            background: var(--gradient-warm);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .planner-left p {
+            font-size: var(--text-lg);
+            opacity: 0.8;
+            line-height: 1.7;
+            max-width: 500px;
+        }
+
+        .planner-features {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+            margin-top: var(--space-8);
+        }
+
+        .planner-feature {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            font-size: var(--text-sm);
+            opacity: 0.85;
+        }
+
+        .planner-feature__icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        /* Chat Interface */
+        .chat-container {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: var(--radius-2xl);
+            overflow: hidden;
+            max-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: var(--space-4) var(--space-5);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            color: white;
+        }
+
+        .chat-header__avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .chat-header__name {
+            font-weight: 700;
+            font-size: var(--text-sm);
+        }
+
+        .chat-header__status {
+            font-size: var(--text-xs);
+            opacity: 0.6;
+        }
+
+        .chat-online {
+            width: 8px;
+            height: 8px;
+            background: var(--color-success);
+            border-radius: var(--radius-full);
+            display: inline-block;
+            margin-right: var(--space-1);
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: var(--space-5);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+
+        .chat-msg {
+            max-width: 85%;
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-xl);
+            font-size: var(--text-sm);
+            line-height: 1.6;
+            animation: fadeInUp 0.4s ease forwards;
+        }
+
+        .chat-msg--bot {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            align-self: flex-start;
+            border-bottom-left-radius: var(--radius-sm);
+        }
+
+        .chat-msg--user {
+            background: var(--gradient-primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: var(--radius-sm);
+        }
+
+        .chat-msg--typing {
+            opacity: 0.6;
+            font-style: italic;
+        }
+
+        .chat-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+            margin-top: var(--space-2);
+        }
+
+        .chat-suggestion {
+            padding: var(--space-2) var(--space-3);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-full);
+            color: white;
+            font-size: var(--text-xs);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .chat-suggestion:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .chat-input-area {
+            padding: var(--space-4) var(--space-5);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            gap: var(--space-2);
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: var(--space-3) var(--space-4);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius-xl);
+            color: white;
+            font-size: var(--text-sm);
+        }
+
+        .chat-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .chat-send {
+            width: 44px;
+            height: 44px;
+            background: var(--gradient-warm);
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+            transition: all var(--transition-base);
+        }
+
+        .chat-send:hover {
+            transform: scale(1.1);
+        }
+
+        /* Trip Result Section */
+        .trip-section {
+            background: var(--color-bg);
+            padding: var(--space-16) 0;
+        }
+
+        .trip-timeline {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .trip-day {
+            margin-bottom: var(--space-10);
+        }
+
+        .trip-day__header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4);
+            margin-bottom: var(--space-6);
+        }
+
+        .trip-day__number {
+            width: 56px;
+            height: 56px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: var(--font-heading);
+            font-weight: 900;
+            font-size: var(--text-xl);
+            flex-shrink: 0;
+        }
+
+        .trip-day__title {
+            font-family: var(--font-heading);
+            font-size: var(--text-xl);
+            font-weight: 700;
+        }
+
+        .trip-day__subtitle {
+            font-size: var(--text-sm);
+            color: var(--color-text-secondary);
+        }
+
+        .trip-activities {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-4);
+            padding-left: 72px;
+        }
+
+        .trip-activity-card {
+            background: var(--color-surface);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            box-shadow: var(--shadow-card);
+            transition: all var(--transition-base);
+            cursor: pointer;
+        }
+
+        .trip-activity-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .trip-activity-card__img {
+            height: 140px;
+            overflow: hidden;
+        }
+
+        .trip-activity-card__img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .trip-activity-card__body {
+            padding: var(--space-4);
+        }
+
+        .trip-activity-card__time {
+            font-size: var(--text-xs);
+            color: var(--color-primary);
+            font-weight: 700;
+            margin-bottom: var(--space-1);
+        }
+
+        .trip-activity-card__title {
+            font-family: var(--font-heading);
+            font-size: var(--text-sm);
+            font-weight: 600;
+            margin-bottom: var(--space-2);
+        }
+
+        .trip-activity-card__footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: var(--text-xs);
+        }
+
+        .trip-activity-card__price {
+            font-weight: 700;
+            color: var(--color-secondary);
+        }
+
+        /* Bottom CTA */
+        .trip-cta {
+            text-align: center;
+            padding: var(--space-10);
+            background: var(--color-primary-50);
+            border-radius: var(--radius-2xl);
+            max-width: 640px;
+            margin: var(--space-10) auto 0;
+        }
+
+        .trip-cta__price {
+            font-family: var(--font-heading);
+            font-size: var(--text-4xl);
+            font-weight: 900;
+            color: var(--color-primary);
+            margin-bottom: var(--space-2);
+        }
+
+        .trip-cta__desc {
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-6);
+        }
+
+        @media (max-width: 1024px) {
+            .planner-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .planner-left h1 {
+                font-size: var(--text-4xl);
+            }
+
+            .trip-activities {
+                grid-template-columns: 1fr;
+                padding-left: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .planner-left h1 {
+                font-size: var(--text-3xl);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar--transparent" id="navbar">
+        <div class="container navbar__inner">
+            <a href="index.html" class="navbar__logo" style="color: white;">
+                Trav<span class="logo-dot">iz</span>
+            </a>
+            <div class="navbar__links" style="color: white;">
+                <a href="index.html" class="navbar__link">หน้าแรก</a>
+                <a href="#" class="navbar__link">กิจกรรม</a>
+                <a href="#" class="navbar__link">ที่พัก</a>
+                <a href="ai-planner.html" class="navbar__link" style="opacity: 1; font-weight: 700;">AI Planner</a>
+            </div>
+            <div class="navbar__actions">
+                <a href="#" class="btn btn-glass" style="font-size: var(--text-sm);">เข้าสู่ระบบ</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO + CHAT -->
+    <section class="planner-hero">
+        <div class="container">
+            <div class="planner-layout">
+                <!-- Left: Info -->
+                <div class="planner-left animate-fadeInUp">
+                    <div class="hero__tagline">
+                        Powered by AI — วางแผนทริปใน 30 วินาที
+                    </div>
+                    <h1>
+                        บอกแค่ว่า<br>อยากไปไหน<br>
+                        <span class="highlight">AI จัดให้</span>
+                    </h1>
+                    <p>
+                        เพียงบอกจุดหมาย จำนวนวัน งบประมาณ และสไตล์การเดินทาง
+                        AI จะสร้างแพลนทริปที่สมบูรณ์แบบพร้อมจองได้ทันที
+                    </p>
+                    <div class="planner-features">
+                        <div class="planner-feature">
+                            <div class="planner-feature__icon">1</div>
+                            <span>สร้างแพลนทริปใน 30 วินาที</span>
+                        </div>
+                        <div class="planner-feature">
+                            <div class="planner-feature__icon">2</div>
+                            <span>เลือกกิจกรรมจากไกด์ท้องถิ่นจริง</span>
+                        </div>
+                        <div class="planner-feature">
+                            <div class="planner-feature__icon">3</div>
+                            <span>คำนวณงบให้อัตโนมัติ — ไม่บานปลาย</span>
+                        </div>
+                        <div class="planner-feature">
+                            <div class="planner-feature__icon">4</div>
+                            <span>จองทุกอย่างได้ในคลิกเดียว</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Chat -->
+                <div class="chat-container animate-fadeInUp delay-200">
+                    <div class="chat-header">
+                        <div class="chat-header__avatar">AI</div>
+                        <div>
+                            <div class="chat-header__name">Traviz AI Concierge</div>
+                            <div class="chat-header__status"><span class="chat-online"></span>ออนไลน์ — พร้อมช่วยเหลือ
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="chat-msg chat-msg--bot" style="animation-delay: 0.2s;">
+                            สวัสดีค่ะ! ฉันเป็น AI Trip Planner ของ Traviz <br><br>
+                            บอกฉันได้เลยว่า <strong>อยากไปไหน กี่วัน งบเท่าไหร่</strong> แล้วฉันจะวางแผนทริปให้ค่ะ
+                        </div>
+                        <div class="chat-msg chat-msg--bot" style="animation-delay: 0.5s;">
+                            หรือเลือกจากตัวอย่างด้านล่างก็ได้ค่ะ
+                            <div class="chat-suggestions">
+                                <button class="chat-suggestion" onclick="sendSuggestion(this)">เชียงใหม่ 3 วัน งบ 5,000</button>
+                                <button class="chat-suggestion" onclick="sendSuggestion(this)">กระบี่ 4 วัน คู่รัก</button>
+                                <button class="chat-suggestion" onclick="sendSuggestion(this)">ภูเก็ต ครอบครัว 5 วัน</button>
+                                <button class="chat-suggestion" onclick="sendSuggestion(this)">เหนือ-อีสาน 7 วัน Backpack</button>
+                            </div>
+                        </div>
+                        <div class="chat-msg chat-msg--user" style="animation-delay: 0.8s;">
+                            อยากไปเชียงใหม่ 3 วัน 2 คน งบ 10,000 บาท ชอบเน้นวัฒนธรรมกับอาหาร
+                        </div>
+                        <div class="chat-msg chat-msg--bot" style="animation-delay: 1.2s;">
+                            เยี่ยมเลยค่ะ! ฉันจัดทริปเชียงใหม่ให้เลย<br><br>
+                            <strong>สรุปแผนการเดินทาง:</strong><br>
+                            เชียงใหม่ • 3 วัน 2 คืน<br>
+                            2 คน • งบ ฿10,000<br>
+                            สไตล์: วัฒนธรรม + อาหาร<br><br>
+                            <em>เลื่อนลงดูแพลนรายวันที่ฉันจัดให้ด้านล่างเลยค่ะ</em>
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" class="chat-input" placeholder="พิมพ์ข้อความ... เช่น ภูเก็ต 3 วัน งบ 8000"
+                            id="chatInput">
+                        <button class="chat-send" onclick="sendMessage()">➤</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TRIP RESULT -->
+    <section class="trip-section">
+        <div class="container">
+            <div class="section-header section-header--centered" style="margin-bottom: var(--space-12);">
+                <div class="section-header__label">แพลนทริปจาก AI</div>
+                <h2 class="section-header__title">เชียงใหม่ 3 วัน 2 คืน — วัฒนธรรม & อาหาร</h2>
+                <p class="section-header__subtitle">AI คัดสรรกิจกรรมจากไกด์ท้องถิ่นและร้านอาหารที่ดีที่สุดให้คุณ</p>
+            </div>
+
+            <div class="trip-timeline">
+                <!-- Day 1 -->
+                <div class="trip-day">
+                    <div class="trip-day__header">
+                        <div class="trip-day__number">1</div>
+                        <div>
+                            <div class="trip-day__title">สำรวจเมืองเก่า & ตลาด</div>
+                            <div class="trip-day__subtitle">วันเสาร์ • 3 กิจกรรม • ประมาณ ฿1,400/คน</div>
+                        </div>
+                    </div>
+                    <div class="trip-activities">
+                        <div class="trip-activity-card">
+                            <div class="trip-activity-card__img">
+                                <img src="https://images.unsplash.com/photo-1528181304800-259b08848526?w=400&q=80"
+                                    alt="Temple tour">
+                            </div>
+                            <div class="trip-activity-card__body">
+                                <div class="trip-activity-card__time">09:00 - 12:00</div>
+                                <div class="trip-activity-card__title">ทัวร์วัดดอยสุเทพ & วัดเก่าแก่</div>
+                                <div class="trip-activity-card__footer">
+                                    <span>⭐ 4.9 (328)</span>
+                                    <span class="trip-activity-card__price">฿990/คน</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="trip-activity-card">
+                            <div class="trip-activity-card__img">
+                                <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=80"
+                                    alt="Street food">
+                            </div>
+                            <div class="trip-activity-card__body">
+                                <div class="trip-activity-card__time">13:00 - 15:00</div>
+                                <div class="trip-activity-card__title">Food Tour ตลาดวโรรส — ชิม 10 เมนู!</div>
+                                <div class="trip-activity-card__footer">
+                                    <span>⭐ 4.8 (156)</span>
+                                    <span class="trip-activity-card__price">฿650/คน</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Day 2 -->
+                <div class="trip-day">
+                    <div class="trip-day__header">
+                        <div class="trip-day__number">2</div>
+                        <div>
+                            <div class="trip-day__title">ศิลปวัฒนธรรมล้านนา & เรียนทำอาหาร</div>
+                            <div class="trip-day__subtitle">วันอาทิตย์ • 2 กิจกรรม • ประมาณ ฿1,900/คน</div>
+                        </div>
+                    </div>
+                    <div class="trip-activities">
+                        <div class="trip-activity-card">
+                            <div class="trip-activity-card__img">
+                                <img src="https://images.unsplash.com/photo-1569154941061-e231b4725ef1?w=400&q=80"
+                                    alt="Lanna culture">
+                            </div>
+                            <div class="trip-activity-card__body">
+                                <div class="trip-activity-card__time">09:00 - 11:30</div>
+                                <div class="trip-activity-card__title">Workshop ทำร่มบ่อสร้าง & เขียนลายล้านนา</div>
+                                <div class="trip-activity-card__footer">
+                                    <span>⭐ 4.9 (89)</span>
+                                    <span class="trip-activity-card__price">฿750/คน</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="trip-activity-card">
+                            <div class="trip-activity-card__img">
+                                <img src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=400&q=80"
+                                    alt="Cooking class">
+                            </div>
+                            <div class="trip-activity-card__body">
+                                <div class="trip-activity-card__time">13:00 - 17:00</div>
+                                <div class="trip-activity-card__title">เรียนทำอาหารเหนือ Farm-to-Table</div>
+                                <div class="trip-activity-card__footer">
+                                    <span>⭐ 4.8 (215)</span>
+                                    <span class="trip-activity-card__price">฿1,690/คน</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Day 3 -->
+                <div class="trip-day">
+                    <div class="trip-day__header">
+                        <div class="trip-day__number">3</div>
+                        <div>
+                            <div class="trip-day__title">ธรรมชาติ & ปิดท้ายทริป</div>
+                            <div class="trip-day__subtitle">วันจันทร์ • 1 กิจกรรม • ประมาณ ฿1,200/คน</div>
+                        </div>
+                    </div>
+                    <div class="trip-activities">
+                        <div class="trip-activity-card">
+                            <div class="trip-activity-card__img">
+                                <img src="https://images.unsplash.com/photo-1551524559-8af4e6624178?w=400&q=80"
+                                    alt="Elephant sanctuary">
+                            </div>
+                            <div class="trip-activity-card__body">
+                                <div class="trip-activity-card__time">08:00 - 13:00</div>
+                                <div class="trip-activity-card__title">ศูนย์ดูแลช้าง Ethical Sanctuary ครึ่งวัน</div>
+                                <div class="trip-activity-card__footer">
+                                    <span>⭐ 5.0 (412)</span>
+                                    <span class="trip-activity-card__price">฿1,990/คน</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary CTA -->
+                <div class="trip-cta">
+                    <div
+                        style="font-size: var(--text-sm); color: var(--color-text-muted); margin-bottom: var(--space-2);">
+                        งบที่ AI คำนวณให้ (2 คน)</div>
+                    <div class="trip-cta__price">฿9,460</div>
+                    <div class="trip-cta__desc">
+                        รวม 6 กิจกรรม • 3 วัน 2 คืน<br>
+                        ต่ำกว่างบ ฿10,000 ที่ตั้งไว้!
+                    </div>
+                    <button class="btn btn-primary btn-lg" style="margin-bottom: var(--space-3);">
+                        จองทั้งทริปเลย — ฿9,460
+                    </button>
+                    <br>
+                    <button class="btn btn-outline" style="font-size: var(--text-sm);">
+                        ปรับแต่งแพลน
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__bottom">
+                <p>© 2026 Traviz. All rights reserved.</p>
+                <div style="display: flex; gap: var(--space-4);">
+                    <a href="#" style="opacity: 0.6; font-size: 14px;">Facebook</a>
+                    <a href="#" style="opacity: 0.6; font-size: 14px;">Instagram</a>
+                    <a href="#" style="opacity: 0.6; font-size: 14px;">Twitter</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Chat interaction
+        function sendSuggestion(btn) {
+            const text = btn.textContent.trim();
+            addMessage(text, 'user');
+            setTimeout(() => {
+                addMessage('กำลังวางแผนทริปให้ค่ะ... โปรดรอสักครู่', 'bot');
+            }, 500);
+            setTimeout(() => {
+                addMessage('เสร็จแล้วค่ะ! เลื่อนลงดูแพลนทริปด้านล่างได้เลยค่ะ', 'bot');
+                document.querySelector('.trip-section').scrollIntoView({ behavior: 'smooth' });
+            }, 2000);
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if (!text) return;
+            addMessage(text, 'user');
+            input.value = '';
+            setTimeout(() => {
+                addMessage('รับทราบค่ะ! กำลังวางแผนทริปที่สมบูรณ์แบบให้คุณ...', 'bot');
+            }, 500);
+            setTimeout(() => {
+                addMessage('เสร็จแล้ว! เลื่อนลงดูแพลนทริปด้านล่างได้เลยค่ะ', 'bot');
+                document.querySelector('.trip-section').scrollIntoView({ behavior: 'smooth' });
+            }, 2000);
+        }
+
+        function addMessage(text, type) {
+            const msgs = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            div.className = `chat-msg chat-msg--${type}`;
+            div.textContent = text;
+            msgs.appendChild(div);
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        // Enter key
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 80) {
+                navbar.classList.remove('navbar--transparent');
+                navbar.classList.add('navbar--solid');
+                navbar.querySelectorAll('.navbar__logo, .navbar__link').forEach(el => {
+                    el.style.color = 'var(--color-text)';
+                });
+            } else {
+                navbar.classList.remove('navbar--solid');
+                navbar.classList.add('navbar--transparent');
+                navbar.querySelectorAll('.navbar__logo, .navbar__link').forEach(el => {
+                    el.style.color = 'white';
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>
